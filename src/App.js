@@ -120,6 +120,21 @@ function App() {
     setInput(value);
   };
 
+  const handleDownload = () => {
+    if(body.length === 0){ 
+      alert("Body of editor is empty")
+      return
+    }
+
+    const element = document.createElement("a");
+    const file = new Blob([body],
+      { type: 'text/plain;charset=utf-8' });
+    element.href = URL.createObjectURL(file);
+    element.download = "myFile.txt";
+    document.body.appendChild(element);
+    element.click();
+  }
+
   return (
     <div className="container">
       <div>
@@ -174,9 +189,7 @@ function App() {
           })}
         </select>
       </div>
-      <div>
-        <button onClick={handleSubmit} >Submit</button>
-      </div>
+      
       <div>
         <div>
 
@@ -190,6 +203,14 @@ function App() {
         <div>
           <button onClick={visionAPI} >Get Code</button>
         </div>
+
+        <div>
+        <button onClick={handleSubmit} >Submit</button>
+      </div>
+
+      <div>
+        <button onClick={handleDownload} >Download</button>
+      </div>
 
       </div>
       <div className="row" >
