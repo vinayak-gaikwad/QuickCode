@@ -8,16 +8,18 @@
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
     "axios": "^0.21.1",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "multer": "^1.4.2",
+    "nodemon": "^2.0.9",
     "react": "^17.0.2",
     "react-ace": "^9.4.1",
     "react-codemirror2": "^7.2.1",
     "react-dom": "^17.0.2",
+    "react-icons": "^4.2.0",
+    "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.3",
-    "web-vitals": "^1.1.2",
-    "cors": "^2.8.5",
-    "express": "^4.17.1",
-    "multer": "^1.4.2",
-    "nodemon": "^2.0.9"
+    "web-vitals": "^1.1.2"
   },
   "scripts": {
     "start": "react-scripts start",
