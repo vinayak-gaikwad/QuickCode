@@ -7,7 +7,7 @@ import { BrowserRouter } from 'react-router-dom'
 
 ReactDOM.render(
   <React.StrictMode>
-    <BrowserRouter>
+    <BrowserRouter history={History} >
       <App />
     </BrowserRouter>
   </React.StrictMode>,

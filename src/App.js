@@ -1,19 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
-import Editor from './Editor'
-import { fontSizes, languageToEditorMode, themes } from './config/EditorOptions'
-import './App.css'
-import { Route, Link } from 'react-router-dom'
-
 import { nanoid } from 'nanoid';
+import { Route, Link, Switch, Redirect } from 'react-router-dom'
+
+import { fontSizes, languageToEditorMode, themes } from './config/EditorOptions'
+import API from './config/Api'
+
+import Editor from './components/Editor'
 import NotesList from './components/NotesList';
 import Search from './components/Search';
 import Header from './components/Header';
-
-const baseURL = 'http://localhost:8080'
-const API = axios.create({
-  baseURL: baseURL
-});
+import SelectOption from './components/SelectOption'
+import LogOut from './components/LogOut'
+import { LoginPage } from './components/Login'
+import { RegisterPage } from './components/Register'
+import './App.css'
 
 function App() {
 
@@ -32,8 +33,7 @@ function App() {
   const [body, setBody] = useState('')
   const [output, setOutput] = useState('')
   const [submissionCheckerId, setSubmissionCheckerId] = useState(null);
-
-
+  const [isLoggedin, setIsLoggedIn] = useState(false);
   const [notes, setNotes] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [darkMode, setDarkMode] = useState(false);
@@ -179,170 +179,175 @@ function App() {
     element.click();
   }
 
+  const Navbar = () => {
+    return (
+      <div>
+        {isLoggedin ?
+          <>
+            <button>
+              <Link to='/editor'>Editor</Link>
+            </button>
+            <button>
+              <Link to='/notes' >Notes</Link>
+            </button>
+            <button>
+              <Link to='/resources' >Resources</Link>
+            </button>
+            <button>
+              <Link to='/logout' >LogOut</Link>
+            </button>
+
+          </> :
+          <>
+            <button>
+              <Link to='/login' >Login</Link>
+            </button>
+            <button>
+              <Link to='/register' >Register</Link>
+            </button>
+          </>
+        }
+      </div>
+    )
+  }
+
+  const Notes = () => {
+    return (<div className={`${darkMode && 'dark-mode'}`} >
+      <Header handleToggleDarkMode={setDarkMode} />
+      <Search handleSearchNote={setSearchText} />
+      <NotesList
+        notes={notes.filter((note) =>
+          note.text.toLowerCase().includes(searchText)
+        )}
+        handleAddNote={addNote}
+        handleDeleteNote={deleteNote}
+      />
+    </div>
+    )
+  }
+  const EditorPage = () => {
+    return (
+      <div>
+        <div>
+          <SelectOption
+            label="Language"
+            defaultValue={language}
+            setValue={setLanguage}
+            values={languages}
+          />
+        </div>
+
+        <div>
+          <SelectOption
+            label="Theme"
+            defaultValue={theme}
+            setValue={setTheme}
+            values={themes}
+          />
+
+        </div>
+        <div>
+          <SelectOption
+            label="Font Size"
+            defaultValue={fontSize}
+            setValue={setFontSize}
+            values={fontSizes}
+          />
+        </div>
+
+        <div>
+          <div>
+            <input
+              type="file"
+              onChange={handleFileChange}
+              ref={fileInput}
+
+            />
+          </div>
+          <div>
+            <button onClick={visionAPI} >Get Code</button>
+          </div>
+
+          <div>
+            <button onClick={handleSubmit} >Submit</button>
+          </div>
+
+          <div>
+            <button onClick={handleDownload} >Download</button>
+          </div>
+
+        </div>
+        <div className="row" >
+          <div className="col-lg-6 col-sm-12" >
+            <p>EDITOR</p>
+
+            <Editor
+              language={language}
+              theme={theme}
+              body={body}
+              setBody={handleUpdateBody}
+              readOnly={false}
+              fontSize={fontSize}
+            />
+          </div>
+
+          <div className="col-lg-6 col-sm-12" >
+            <p>INPUT</p>
+            <Editor
+              language=''
+              theme={theme}
+              body={input}
+              setBody={handleUpdateInput}
+              readOnly={false}
+              fontSize={fontSize}
+            />
+
+          </div>
+          <div className="col-sm-12" >
+            <p>OUTPUT</p>
+            <Editor
+              language=""
+              theme={theme}
+              body={output}
+              setBody={setOutput}
+              readOnly={true}
+              fontSize={fontSize}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const Resources = () => {
+    return (
+      <div className="card">
+        <div className="card-body">
+          <h5 className="card-title">Card title</h5>
+          <h6 className="card-subtitle mb-2 text-muted">Card subtitle</h6>
+          <p className="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
+          <a href="#" className="card-link">Card link</a>
+          <a href="#" className="card-link">Another link</a>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="container">
-      <div className={`${darkMode && 'dark-mode'}`} >
-        <button>
-          <Link to='/editor'>Editor</Link>
-        </button>
-        <button>
-          <Link to='/notes' >Notes</Link>
-        </button>
-        <button>
-          <Link to='/resources' >Resources</Link>
-        </button>
+      <Navbar />
+      <Switch>
+        {/* <PrivateRoute exact path="/" component={Home} /> */}
+        <Route path="/login" render={(props) =>
+          <LoginPage {...props} setIsLoggedIn={(val) => setIsLoggedIn(val)} />} />
+        <Route path="/register" component={RegisterPage} />
+        <Route path="/editor" component={EditorPage} />
+        <Route path="/notes" component={Notes} />
+        <Route path="/resources" component={Resources} />
+        <Route path="/logout" component={LogOut} />
+        <Redirect from='/' to="/editor" />
 
-        <div className={`${darkMode && 'dark-mode'}`} >
-          <Route path='/notes' render={() => <>
-            <Header handleToggleDarkMode={setDarkMode} />
-            <Search handleSearchNote={setSearchText} />
-            <NotesList
-              notes={notes.filter((note) =>
-                note.text.toLowerCase().includes(searchText)
-              )}
-              handleAddNote={addNote}
-              handleDeleteNote={deleteNote}
-            />
-          </>} />
-        </div>
-
-        <div>
-          <Route path='/editor' render={() =>
-            <>
-              <div>
-                <label>Language</label>
-                <select
-                  className="form-select"
-                  defaultValue={language}
-                  onChange={(event) => {
-                    setLanguage(event.target.value)
-                  }}
-                >
-                  {languages.map((lang, index) => {
-                    return (
-                      <option key={index} value={lang} selected={lang === language}>
-                        {lang}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-
-              <div>
-                <label>Theme</label>
-                <select
-                  className="form-select"
-                  defaultValue={theme}
-                  onChange={(event) => setTheme(event.target.value)}
-                >
-                  {themes.map((theme, index) => {
-                    return (
-                      <option key={index} value={theme}>
-                        {theme}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-              <div>
-                <label>Font Size</label>
-                <select
-                  className="form-select"
-                  defaultValue={fontSize}
-                  onChange={(event) => setFontSize(event.target.value)}
-                >
-                  {fontSizes.map((fontSize, index) => {
-                    return (
-                      <option key={index} value={fontSize}>
-                        {fontSize}
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-
-              <div>
-                <div>
-
-                  <input
-                    type="file"
-                    onChange={handleFileChange}
-                    ref={fileInput}
-
-                  />
-                </div>
-                <div>
-                  <button onClick={visionAPI} >Get Code</button>
-                </div>
-
-                <div>
-                  <button onClick={handleSubmit} >Submit</button>
-                </div>
-
-                <div>
-                  <button onClick={handleDownload} >Download</button>
-                </div>
-
-              </div>
-              <div className="row" >
-                <div className="col-lg-6 col-sm-12" >
-                  <p>EDITOR</p>
-
-                  <Editor
-                    language={language}
-                    theme={theme}
-                    body={body}
-                    setBody={handleUpdateBody}
-                    readOnly={false}
-                    fontSize={fontSize}
-                  />
-                </div>
-
-                <div className="col-lg-6 col-sm-12" >
-                  <p>INPUT</p>
-                  <Editor
-                    language=''
-                    theme={theme}
-                    body={input}
-                    setBody={handleUpdateInput}
-                    readOnly={false}
-                    fontSize={fontSize}
-                  />
-
-                </div>
-                <div className="col-sm-12" >
-                  <p>OUTPUT</p>
-                  <Editor
-                    language=""
-                    theme={theme}
-                    body={output}
-                    setBody={setOutput}
-                    readOnly={true}
-                    fontSize={fontSize}
-                  />
-                </div>
-
-              </div>
-            </>
-          } />
-
-        </div>
-        <div>
-
-        </div>
-        <Route path='/resources' render={() =>
-          <div className="card">
-            <div className="card-body">
-              <h5 className="card-title">Card title</h5>
-              <h6 className="card-subtitle mb-2 text-muted">Card subtitle</h6>
-              <p className="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-              <a href="#" className="card-link">Card link</a>
-              <a href="#" className="card-link">Another link</a>
-            </div>
-          </div>
-        } />
-
-      </div>
+      </Switch>
     </div>
   )
 }
