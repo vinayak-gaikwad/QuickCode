@@ -2,15 +2,16 @@ const express = require('express')
 const multer = require('multer')
 const cors = require('cors')
 const { v4: uuidv4 } = require('uuid');
-
+const bcrypt = require('bcrypt')
+const vision = require('@google-cloud/vision');
 const connection = require('./DatabaseConnection')
 
 connection.connect();
 
 const PORT = process.env.PORT || 5000
 const app = express();
-const vision = require('@google-cloud/vision')
 
+//middleware
 app.use(express.json())
 app.use(cors())
 
@@ -51,11 +52,9 @@ app.post('/upload', (req, res) => {
     })
 })
 
-
 //---------------------------------------Login / register------------------------------------//
 
 const getUsernames = async (user) => {
-
     return new Promise((resolve, reject) => {
         connection.query('SELECT * FROM users WHERE email = ?', [user.email], (error, elements) => {
             if (error) {
@@ -69,10 +68,11 @@ const getUsernames = async (user) => {
 app.post('/register', async (req, res) => {
     const { name, username, password } = req.body
     console.log(name, username, password)
-    const user = { id: uuidv4(), name: name, email: username, password: password, timestamp: new Date() }
+
+    const hash = bcrypt.hashSync(password, 10); // saltRounds = 10
+    const user = { id: uuidv4(), name: name, email: username, password: hash, timestamp: new Date() }
 
     try {
-
         const query = await getUsernames(user)
 
         if (query.length === 0) {
@@ -85,7 +85,6 @@ app.post('/register', async (req, res) => {
         console.log(err)
         return res.send('error occured')
     }
-
 })
 
 app.post('/login', async (req, res) => {
@@ -95,10 +94,12 @@ app.post('/login', async (req, res) => {
 
     const user = { email: username, password: password }
     try {
+
         const query = await getUsernames(user)
         console.log(query.length)
         if (query.length === 1) {
-            if (query[0].password === user.password) {
+            const isValid = bcrypt.compareSync(user.password, query[0].password);
+            if (isValid) {
 
                 return res.json({ auth: true, id: query[0].id }).status(200)
             }

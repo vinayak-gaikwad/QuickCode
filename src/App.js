@@ -345,8 +345,8 @@ function App() {
         <Route path="/notes" component={Notes} />
         <Route path="/resources" component={Resources} />
         <Route path="/logout" component={LogOut} />
-        <Redirect from='/' to="/editor" />
-
+        {/* <Redirect from='/' to="/editor" /> */}
+          
       </Switch>
     </div>
   )
