@@ -4,6 +4,8 @@
   "private": true,
   "dependencies": {
     "@google-cloud/vision": "^2.3.5",
+    "@material-ui/core": "^4.12.0",
+    "@material-ui/icons": "^4.11.2",
     "@testing-library/jest-dom": "^5.14.1",
     "@testing-library/react": "^11.2.7",
     "@testing-library/user-event": "^12.8.3",
@@ -11,6 +13,7 @@
     "bcrypt": "^5.0.1",
     "cors": "^2.8.5",
     "express": "^4.17.1",
+    "joi": "^17.4.0",
     "multer": "^1.4.2",
     "mysql": "^2.18.1",
     "nodemon": "^2.0.9",

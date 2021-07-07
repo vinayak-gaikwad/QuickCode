@@ -1,5 +1,4 @@
 import React from 'react';
-
 import AceEditor from 'react-ace';
 
 import 'ace-builds/src-noconflict/ext-language_tools';
@@ -22,27 +21,26 @@ import 'ace-builds/src-noconflict/theme-xcode';
 import 'ace-builds/src-noconflict/theme-ambiance';
 import 'ace-builds/src-noconflict/theme-solarized_light';
 
-
-export default function Editor({language,
+export default function Editor({ language,
     theme,
     body,
-    setBody,
+    handleBodyChange,
     height,
     readOnly,
     width,
-    fontSize}) {
+    fontSize }) {
     return (
         <div>
             <AceEditor
                 mode={language}
                 theme={theme}
-                onChange={(value) => setBody(value)}
+                onChange={val => handleBodyChange(val)}
                 value={body}
                 width={width ? width : '100%'}
                 height={height ? height : '73vh'}
                 readOnly={readOnly ? readOnly : false}
                 fontSize={fontSize ? (isNaN(+fontSize) ? 12 : +fontSize) : 12}
-                name="UNIQUE_ID_OF_DIV"
+                name={language + theme}
                 showGutter={true}
                 editorProps={{ $blockScrolling: true }}
                 setOptions={{

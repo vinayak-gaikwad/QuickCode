@@ -7,9 +7,6 @@ class LoginPage extends React.Component {
         super(props);
         console.log(props)
 
-        // reset login status
-        // this.props.logout();
-
         this.state = {
             username: '',
             password: '',
@@ -33,24 +30,25 @@ class LoginPage extends React.Component {
         const { username, password } = this.state;
         if (username && password) {
             axios.post('http://localhost:5000/login', {
-                username:username,
+                username: username,
                 password: password
             })
-            .then(res => {
-                console.log(res.data)
-                if(res.data.auth === true){
-                    
-                    localStorage.setItem('auth', res.data.id)
-                    this.props.history.push('/')
-                    this.props.setIsLoggedIn(true)
-                }
-                else{
-                    alert("Wrong credintials")
-                }
-            })
-            .catch(err=>{
-                console.log(err)
-            })
+                .then(res => {
+                    console.log(res.data)
+                    if (res.data.auth === true) {
+
+                        //localStorage.setItem('auth', res.data.id)
+                        this.props.history.push('/')
+                        this.props.setIsLoggedIn(true)
+                        this.props.setUserId(res.data.id)
+                    }
+                    else {
+                        alert("Wrong credintials")
+                    }
+                })
+                .catch(err => {
+                    console.log(err)
+                })
         }
     }
 
@@ -58,7 +56,7 @@ class LoginPage extends React.Component {
         const { loggingIn } = this.props;
         const { username, password, submitted } = this.state;
         return (
-            <div className="col-md-6 col-md-offset-3">
+            <div className="container">
                 <h2>Login</h2>
                 <form name="form" onSubmit={this.handleSubmit}>
                     <div className={'form-group' + (submitted && !username ? ' has-error' : '')}>
@@ -77,7 +75,7 @@ class LoginPage extends React.Component {
                     </div>
                     <div className="form-group">
                         <button className="btn btn-primary">Login</button>
-                        
+
                         <Link to="/register" className="btn btn-link">Register</Link>
                     </div>
                 </form>
@@ -86,4 +84,5 @@ class LoginPage extends React.Component {
     }
 }
 
-export { LoginPage };
+export default LoginPage;
+

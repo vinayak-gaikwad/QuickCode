@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 import { nanoid } from 'nanoid';
-import { Route, Link, Switch, Redirect } from 'react-router-dom'
-
-import { fontSizes, languageToEditorMode, themes } from './config/EditorOptions'
-import API from './config/Api'
+import { Route, Switch, Redirect } from 'react-router-dom'
 
 import Editor from './components/Editor'
 import NotesList from './components/NotesList';
@@ -12,8 +9,12 @@ import Search from './components/Search';
 import Header from './components/Header';
 import SelectOption from './components/SelectOption'
 import LogOut from './components/LogOut'
-import { LoginPage } from './components/Login'
-import { RegisterPage } from './components/Register'
+import LoginPage from './components/Login'
+import Register from './components/Register'
+import PersistentDrawerLeft from './components/Drawer';
+
+import { fontSizes, languageToEditorMode, themes } from './config/EditorOptions'
+import { navbarList, signInList } from './utility/NavUtil'
 import './App.css'
 
 function App() {
@@ -37,38 +38,50 @@ function App() {
   const [notes, setNotes] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [darkMode, setDarkMode] = useState(false);
+  const [userId, setUserId] = useState('');
 
-  useEffect(() => {
-    const savedNotes = JSON.parse(
-      localStorage.getItem('react-notes-app-data')
-    );
-
-    if (savedNotes) {
-      setNotes(savedNotes);
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(
-      'react-notes-app-data',
-      JSON.stringify(notes)
-    );
-  }, [notes]);
+  const loadNotes = () => {
+    axios.get(`http://localhost:5000/notes/${userId}`)
+      .then(res => {
+        const savedNotes = res.data
+        if (savedNotes) {
+          setNotes(savedNotes);
+        }
+      })
+      .catch(err => {
+        console.log(err);
+      })
+  }
 
   const addNote = (text) => {
     const date = new Date();
     const newNote = {
-      id: nanoid(),
+      id: userId,
       text: text,
-      date: date.toLocaleDateString(),
+      noteId: nanoid(),
+      timestamp: date.toLocaleDateString(),
     };
-    const newNotes = [...notes, newNote];
-    setNotes(newNotes);
+
+    axios.post(`http://localhost:5000/note`, newNote)
+      .then(res => {
+        const newNotes = [...notes, newNote];
+        setNotes(newNotes);
+      })
+      .catch(err => {
+        console.log(err);
+      })
   };
 
   const deleteNote = (id) => {
-    const newNotes = notes.filter((note) => note.id !== id);
-    setNotes(newNotes);
+    axios.delete(`http://localhost:5000/note/${id}`,)
+      .then(res => {
+        console.log(res)
+        const newNotes = notes.filter((note) => note.noteId !== id);
+        setNotes(newNotes);
+      })
+      .catch(err => {
+        console.log(err)
+      })
   };
 
   const fileInput = useRef(null);
@@ -98,7 +111,7 @@ function App() {
         api_key: 'guest'
       });
       const querystring = params.toString();
-      API.get(`https://api.paiza.io/runners/get_details?${querystring}`).then((res) => {
+      axios.get(`https://api.paiza.io/runners/get_details?${querystring}`).then((res) => {
         const { stdout, stderr, build_stderr } = res.data;
         console.log(res.data);
         let output = '';
@@ -123,7 +136,7 @@ function App() {
       input: input,
       api_key: 'guest'
     };
-    API.post(`https://api.paiza.io/runners/create`, params)
+    axios.post(`https://api.paiza.io/runners/create`, params)
       .then((res) => {
         const { id, status } = res.data;
         setSubmissionId(id);
@@ -148,7 +161,7 @@ function App() {
       api_key: 'guest'
     });
     const querystring = params.toString();
-    API.get(`https://api.paiza.io/runners/get_status?${querystring}`).then((res) => {
+    axios.get(`https://api.paiza.io/runners/get_status?${querystring}`).then((res) => {
       const { status } = res.data;
       setSubmissionStatus(status);
     });
@@ -182,30 +195,12 @@ function App() {
   const Navbar = () => {
     return (
       <div>
-        {isLoggedin ?
-          <>
-            <button>
-              <Link to='/editor'>Editor</Link>
-            </button>
-            <button>
-              <Link to='/notes' >Notes</Link>
-            </button>
-            <button>
-              <Link to='/resources' >Resources</Link>
-            </button>
-            <button>
-              <Link to='/logout' >LogOut</Link>
-            </button>
 
-          </> :
-          <>
-            <button>
-              <Link to='/login' >Login</Link>
-            </button>
-            <button>
-              <Link to='/register' >Register</Link>
-            </button>
-          </>
+        {isLoggedin
+          ?
+          <PersistentDrawerLeft navbarList={navbarList} currTitle={'QuickCode'} />
+          :
+          <PersistentDrawerLeft navbarList={signInList} currTitle={'QuickCode'} />
         }
       </div>
     )
@@ -225,99 +220,6 @@ function App() {
     </div>
     )
   }
-  const EditorPage = () => {
-    return (
-      <div>
-        <div>
-          <SelectOption
-            label="Language"
-            defaultValue={language}
-            setValue={setLanguage}
-            values={languages}
-          />
-        </div>
-
-        <div>
-          <SelectOption
-            label="Theme"
-            defaultValue={theme}
-            setValue={setTheme}
-            values={themes}
-          />
-
-        </div>
-        <div>
-          <SelectOption
-            label="Font Size"
-            defaultValue={fontSize}
-            setValue={setFontSize}
-            values={fontSizes}
-          />
-        </div>
-
-        <div>
-          <div>
-            <input
-              type="file"
-              onChange={handleFileChange}
-              ref={fileInput}
-
-            />
-          </div>
-          <div>
-            <button onClick={visionAPI} >Get Code</button>
-          </div>
-
-          <div>
-            <button onClick={handleSubmit} >Submit</button>
-          </div>
-
-          <div>
-            <button onClick={handleDownload} >Download</button>
-          </div>
-
-        </div>
-        <div className="row" >
-          <div className="col-lg-6 col-sm-12" >
-            <p>EDITOR</p>
-
-            <Editor
-              language={language}
-              theme={theme}
-              body={body}
-              setBody={handleUpdateBody}
-              readOnly={false}
-              fontSize={fontSize}
-            />
-          </div>
-
-          <div className="col-lg-6 col-sm-12" >
-            <p>INPUT</p>
-            <Editor
-              language=''
-              theme={theme}
-              body={input}
-              setBody={handleUpdateInput}
-              readOnly={false}
-              fontSize={fontSize}
-            />
-
-          </div>
-          <div className="col-sm-12" >
-            <p>OUTPUT</p>
-            <Editor
-              language=""
-              theme={theme}
-              body={output}
-              setBody={setOutput}
-              readOnly={true}
-              fontSize={fontSize}
-            />
-          </div>
-        </div>
-      </div>
-    )
-  }
 
   const Resources = () => {
     return (
@@ -334,22 +236,122 @@ function App() {
   }
 
   return (
-    <div className="container">
+    <div className="container-lg">
       <Navbar />
       <Switch>
-        {/* <PrivateRoute exact path="/" component={Home} /> */}
-        <Route path="/login" render={(props) =>
-          <LoginPage {...props} setIsLoggedIn={(val) => setIsLoggedIn(val)} />} />
-        <Route path="/register" component={RegisterPage} />
-        <Route path="/editor" component={EditorPage} />
-        <Route path="/notes" component={Notes} />
-        <Route path="/resources" component={Resources} />
-        <Route path="/logout" component={LogOut} />
-        {/* <Redirect from='/' to="/editor" /> */}
-          
+        {
+          isLoggedin ?
+            <>
+              <Route path="/login" render={(props) =>
+                <LoginPage {...props} setUserId={(id) => setUserId(id)} setIsLoggedIn={(val) => setIsLoggedIn(val)} />} />
+              <Route path="/register" component={Register} />
+              <Route path="/editor" >
+                <div>
+                  <div>
+                    <SelectOption
+                      label="Language"
+                      defaultValue={language}
+                      setValue={setLanguage}
+                      values={languages}
+                    />
+                  </div>
+
+                  <div>
+                    <SelectOption
+                      label="Theme"
+                      defaultValue={theme}
+                      setValue={setTheme}
+                      values={themes}
+                    />
+
+                  </div>
+                  <div>
+                    <SelectOption
+                      label="Font Size"
+                      defaultValue={fontSize}
+                      setValue={setFontSize}
+                      values={fontSizes}
+                    />
+                  </div>
+
+                  <div>
+                    <div>
+                      <input
+                        type="file"
+                        onChange={handleFileChange}
+                        ref={fileInput}
+
+                      />
+                    </div>
+                    <div>
+                      <button onClick={visionAPI} >Get Code</button>
+                    </div>
+
+                    <div>
+                      <button onClick={handleSubmit} >Submit</button>
+                    </div>
+
+                    <div>
+                      <button onClick={handleDownload} >Download</button>
+                    </div>
+
+                  </div>
+                  <div className="row" >
+                    <div className="col-lg-6 col-sm-12" >
+                      <p>EDITOR</p>
+
+                      <Editor
+
+                        language={language}
+                        theme={theme}
+                        body={body}
+                        handleBodyChange={(val) => handleUpdateBody(val)}
+                        readOnly={false}
+                        fontSize={fontSize}
+                      />
+                    </div>
+
+                    <div className="col-lg-6 col-sm-12" >
+                      <p>INPUT</p>
+                      <Editor
+                        language=''
+                        theme={theme}
+                        body={input}
+                        handleBodyChange={handleUpdateInput}
+                        readOnly={false}
+                        fontSize={fontSize}
+                      />
+
+                    </div>
+                    <div className="col-sm-12" >
+                      <p>OUTPUT</p>
+                      <Editor
+                        language=""
+                        theme={theme}
+                        body={output}
+                        handleBodyChange={setOutput}
+                        readOnly={true}
+                        fontSize={fontSize}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </Route>
+              <Route path="/notes" component={Notes} />
+              <Route path="/resources" component={Resources} />
+              <Route path="/logout" component={LogOut} />
+            </>
+            :
+            <>
+              <Route path="/login" render={(props) =>
+                <LoginPage {...props} setUserId={(id) => setUserId(id)} setIsLoggedIn={(val) => setIsLoggedIn(val)} />} />
+              <Route path="/register" component={Register} />
+              <Redirect from='*' to='/login' />
+            </>
+        }
+
       </Switch>
     </div>
   )
 }
-
 export default App

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios'
 
-class RegisterPage extends React.Component {
+class Register extends React.Component {
     constructor(props) {
         super(props);
 
@@ -38,20 +38,20 @@ class RegisterPage extends React.Component {
         const { user } = this.state;
         if (user.firstName && user.lastName && user.username && user.password) {
             axios.post('http://localhost:5000/register', {
-                name: user.firstName+" "+user.lastName,
+                name: user.firstName + " " + user.lastName,
                 username: user.username,
                 password: user.password
             })
-            .then(res => {
-                console.log(res)
-                    if(res.data.registerStatus === true){
+                .then(res => {
+                    console.log(res)
+                    if (res.data.registerStatus === true) {
                         alert("Registration Successfull")
                         this.props.history.push('/login')
                     }
-            })
-            .catch(err=>{
-                console.log(err)
-            })
+                })
+                .catch(err => {
+                    console.log(err)
+                })
         }
     }
 
@@ -90,8 +90,8 @@ class RegisterPage extends React.Component {
                         }
                     </div>
                     <div className="form-group">
-                    <button className="btn btn-primary">Register</button>
-                    
+                        <button className="btn btn-primary">Register</button>
+
                         <Link to="/login" className="btn btn-link">Cancel</Link>
                     </div>
                 </form>
@@ -100,4 +100,4 @@ class RegisterPage extends React.Component {
     }
 }
 
-export { RegisterPage };
+export default Register;

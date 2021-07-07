@@ -11,9 +11,10 @@ const NotesList = ({
 			<AddNote handleAddNote={handleAddNote} />
 			{notes.map((note) => (
 				<Note
-					id={note.id}
+					key={note.noteId}
+					id={note.noteId}
 					text={note.text}
-					date={note.date}
+					date={note.timestamp}
 					handleDeleteNote={handleDeleteNote}
 				/>
 			))}
