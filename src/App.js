@@ -12,7 +12,11 @@ import LogOut from './components/LogOut'
 import LoginPage from './components/Login'
 import Register from './components/Register'
 import PersistentDrawerLeft from './components/Drawer';
+import CardList from './components/CardList';
 
+
+
+import ResourcesList from './Resources/Resources'
 import { fontSizes, languageToEditorMode, themes } from './config/EditorOptions'
 import { navbarList, signInList } from './utility/NavUtil'
 import './App.css'
@@ -39,6 +43,9 @@ function App() {
   const [searchText, setSearchText] = useState('');
   const [darkMode, setDarkMode] = useState(false);
   const [userId, setUserId] = useState('');
+  const [resLang, setResLang] = useState('')
+
+
 
   const loadNotes = () => {
     axios.get(`http://localhost:5000/notes/${userId}`)
@@ -52,6 +59,7 @@ function App() {
         console.log(err);
       })
   }
+
 
   const addNote = (text) => {
     const date = new Date();
@@ -88,6 +96,7 @@ function App() {
 
   const visionAPI = () => {
     const fileName = fileInput.current.files[0]
+    if(!fileName) alert("please select image")
     const data = new FormData()
     data.append('file', fileName)
     axios.post('http://localhost:5000/upload', data, {})
@@ -198,7 +207,7 @@ function App() {
 
         {isLoggedin
           ?
-          <PersistentDrawerLeft navbarList={navbarList} currTitle={'QuickCode'} />
+          <PersistentDrawerLeft loadNotes={loadNotes} navbarList={navbarList} currTitle={'QuickCode'} />
           :
           <PersistentDrawerLeft navbarList={signInList} currTitle={'QuickCode'} />
         }
@@ -206,31 +215,41 @@ function App() {
     )
   }
 
+
   const Notes = () => {
-    return (<div className={`${darkMode && 'dark-mode'}`} >
-      <Header handleToggleDarkMode={setDarkMode} />
-      <Search handleSearchNote={setSearchText} />
-      <NotesList
-        notes={notes.filter((note) =>
-          note.text.toLowerCase().includes(searchText)
-        )}
-        handleAddNote={addNote}
-        handleDeleteNote={deleteNote}
-      />
-    </div>
+
+    return (
+      <div className={`${darkMode && 'dark-mode'}`} >
+        <Header handleToggleDarkMode={setDarkMode} />
+        <Search handleSearchNote={setSearchText} />
+        <NotesList
+          notes={notes.filter((note) =>
+            note.text.toLowerCase().includes(searchText)
+          )}
+          handleAddNote={addNote}
+          handleDeleteNote={deleteNote}
+        />
+      </div>
     )
   }
 
+
   const Resources = () => {
     return (
-      <div className="card">
-        <div className="card-body">
-          <h5 className="card-title">Card title</h5>
-          <h6 className="card-subtitle mb-2 text-muted">Card subtitle</h6>
-          <p className="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-          <a href="#" className="card-link">Card link</a>
-          <a href="#" className="card-link">Another link</a>
-        </div>
+      <div>
+        <Search handleSearchNote={setResLang} />
+        {
+
+          ["Java", "Python", "C", "C++", "Javascript"].map((lang, ind) => {
+
+            return (
+              <button className="btn btn-outline-primary mx-3 my-3" value={lang} onClick={(lang) => setResLang(lang.target.innerText)} key={ind}><b>{lang}</b></button>
+            )
+          })
+
+        }
+
+        <CardList resources={ResourcesList.filter(itm => (resLang.toLowerCase().includes(itm.name.toLowerCase()) || resLang.toLowerCase().includes(itm.topic[0].toLowerCase())))} />
       </div>
     )
   }
@@ -247,7 +266,7 @@ function App() {
               <Route path="/register" component={Register} />
               <Route path="/editor" >
                 <div>
-                  <div>
+                  <div className="mb-2">
                     <SelectOption
                       label="Language"
                       defaultValue={language}
@@ -256,7 +275,7 @@ function App() {
                     />
                   </div>
 
-                  <div>
+                  <div className="mb-2">
                     <SelectOption
                       label="Theme"
                       defaultValue={theme}
@@ -265,7 +284,7 @@ function App() {
                     />
 
                   </div>
-                  <div>
+                  <div className="mb-2">
                     <SelectOption
                       label="Font Size"
                       defaultValue={fontSize}
@@ -274,31 +293,42 @@ function App() {
                     />
                   </div>
 
-                  <div>
-                    <div>
+                  <div className="col-lg-6 col-sm-12 mb-2 mt-3">
+                  <div className="d-flex align-items-center justify-content-between mb-2" >
+                      <label for="file-upload" class="custom-file-upload btn-outline-success">
+                        <i class="fa fa-cloud-upload"></i> Upload Image
+                      </label>
+
                       <input
+                        id="file-upload"
+
                         type="file"
                         onChange={handleFileChange}
                         ref={fileInput}
 
                       />
-                    </div>
-                    <div>
-                      <button onClick={visionAPI} >Get Code</button>
+
+
+
+                      <button class="btn btn-outline-success mx-3" onClick={visionAPI} >Get Code</button>
+
                     </div>
 
-                    <div>
-                      <button onClick={handleSubmit} >Submit</button>
-                    </div>
+
+                    {/* <div className="d-flex justify-content-between mb-2">
+                      <button class="btn btn-outline-success" onClick={handleSubmit} >Submit</button>
+                      <button class="btn btn-outline-success" onClick={handleDownload} >Download</button>
+                    </div> */}
 
                     <div>
-                      <button onClick={handleDownload} >Download</button>
+
                     </div>
 
                   </div>
                   <div className="row" >
-                    <div className="col-lg-6 col-sm-12" >
+                    <div className="col-lg-6 col-sm-12 mb-2" >
                       <p>EDITOR</p>
+                      
 
                       <Editor
 
@@ -309,6 +339,10 @@ function App() {
                         readOnly={false}
                         fontSize={fontSize}
                       />
+                       <div className="d-flex justify-content-between my-2">
+                      <button class="btn btn-outline-success" onClick={handleSubmit} >Submit</button>
+                      <button class="btn btn-outline-success" onClick={handleDownload} >Download</button>
+                    </div>
                     </div>
 
                     <div className="col-lg-6 col-sm-12" >
@@ -320,6 +354,8 @@ function App() {
                         handleBodyChange={handleUpdateInput}
                         readOnly={false}
                         fontSize={fontSize}
+                        height='150px'
+
                       />
 
                     </div>
@@ -332,13 +368,43 @@ function App() {
                         handleBodyChange={setOutput}
                         readOnly={true}
                         fontSize={fontSize}
+                        height='250px'
+
                       />
                     </div>
                   </div>
                 </div>
               </Route>
-              <Route path="/notes" component={Notes} />
-              <Route path="/resources" component={Resources} />
+              <Route path="/notes" >
+                <div className={`${darkMode && 'dark-mode'}`} >
+                  <Header handleToggleDarkMode={setDarkMode} />
+                  <Search handleSearchNote={setSearchText} />
+                  <NotesList
+                    notes={notes.filter((note) =>
+                      note.text.toLowerCase().includes(searchText)
+                    )}
+                    handleAddNote={addNote}
+                    handleDeleteNote={deleteNote}
+                  />
+                </div>
+              </Route>
+              <Route path="/resources" component={Resources} >
+                <div>
+                  <Search handleSearchNote={setResLang} />
+                  {
+
+                    ["Java", "Python", "C", "C++", "Javascript"].map((lang, ind) => {
+
+                      return (
+                        <button className="btn btn-outline-primary mx-3 my-3" value={lang} onClick={(lang) => setResLang(lang.target.innerText)} key={ind}><b>{lang}</b></button>
+                      )
+                    })
+
+                  }
+
+                  <CardList resources={ResourcesList.filter(itm => itm.topic[0].toLowerCase() === resLang.toLowerCase())} />
+                </div>
+              </Route>
               <Route path="/logout" component={LogOut} />
             </>
             :

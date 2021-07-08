@@ -76,12 +76,19 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function PersistentDrawerLeft({ navbarList, currTitle }) {
+export default function PersistentDrawerLeft({ navbarList, currTitle, loadNotes }) {
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
   const [title, setTitle] = React.useState(currTitle)
   const [list, setList] = React.useState(navbarList)
+
+  const handleSetTitle = (e) => {
+    setTitle(e.target.outerText)
+    if (e.target.outerText === 'Notes') {
+      loadNotes()
+    }
+  }
 
   const handleDrawerOpen = () => {
     setOpen(true);
@@ -136,7 +143,7 @@ export default function PersistentDrawerLeft({ navbarList, currTitle }) {
               <ListItem button key={obj.text}>
 
                 <ListItemIcon>{obj.icon()}</ListItemIcon>
-                <ListItemText onClick={(e) => setTitle(e.target.outerText)} primary={obj.text} />
+                <ListItemText onClick={handleSetTitle} primary={obj.text} />
 
               </ListItem>
             </Link>

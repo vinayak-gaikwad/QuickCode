@@ -27,6 +27,7 @@ class LoginPage extends React.Component {
         e.preventDefault();
 
         this.setState({ submitted: true });
+
         const { username, password } = this.state;
         if (username && password) {
             axios.post('http://localhost:5000/login', {
@@ -34,6 +35,7 @@ class LoginPage extends React.Component {
                 password: password
             })
                 .then(res => {
+
                     console.log(res.data)
                     if (res.data.auth === true) {
 

@@ -40,3 +40,18 @@
 ul{
   float: right;
 }
+
+.card:hover{
+  transform: scale(1.01);
+box-shadow: 0 10px 20px rgba(0,0,0,.12), 0 4px 8px rgba(0,0,0,.06);
+}
+
+input[type="file"] {
+  display: none;
+}
+.custom-file-upload {
+  border: 1px solid green;
+  
+  padding: 6px 12px;
+  cursor: pointer;
+}
