@@ -13,6 +13,7 @@ import LoginPage from './components/Login'
 import Register from './components/Register'
 import PersistentDrawerLeft from './components/Drawer';
 import CardList from './components/CardList';
+import Home from './components/Home'
 
 
 
@@ -261,6 +262,7 @@ function App() {
         {
           isLoggedin ?
             <>
+            
               <Route path="/login" render={(props) =>
                 <LoginPage {...props} setUserId={(id) => setUserId(id)} setIsLoggedIn={(val) => setIsLoggedIn(val)} />} />
               <Route path="/register" component={Register} />
@@ -270,7 +272,7 @@ function App() {
                     <SelectOption
                       label="Language"
                       defaultValue={language}
-                      setValue={setLanguage}
+                      setValue={(val)=>setLanguage(val)}
                       values={languages}
                     />
                   </div>
@@ -326,18 +328,19 @@ function App() {
 
                   </div>
                   <div className="row" >
-                    <div className="col-lg-6 col-sm-12 mb-2" >
+                    <div className="col-lg-6 col-sm-12 mb-2 mx-0 pe-0" >
                       <p>EDITOR</p>
                       
 
                       <Editor
 
-                        language={language}
+                        language={languageToEditorMode[language]}
                         theme={theme}
                         body={body}
                         handleBodyChange={(val) => handleUpdateBody(val)}
                         readOnly={false}
                         fontSize={fontSize}
+                        width="100%"
                       />
                        <div className="d-flex justify-content-between my-2">
                       <button class="btn btn-outline-success" onClick={handleSubmit} >Submit</button>
@@ -406,13 +409,22 @@ function App() {
                 </div>
               </Route>
               <Route path="/logout" component={LogOut} />
+              <Route exact path='/' >
+                <Home isLoggedin={isLoggedin}/>
+              </Route>
             </>
             :
             <>
+              <Switch>
               <Route path="/login" render={(props) =>
                 <LoginPage {...props} setUserId={(id) => setUserId(id)} setIsLoggedIn={(val) => setIsLoggedIn(val)} />} />
               <Route path="/register" component={Register} />
-              <Redirect from='*' to='/login' />
+              <Route exact path='/' >
+                <Home isLoggedin={isLoggedin}/>
+              </Route>
+              <Redirect from='*' to='/' /> 
+              </Switch>
+              
             </>
         }
 

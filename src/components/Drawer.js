@@ -118,7 +118,7 @@ export default function PersistentDrawerLeft({ navbarList, currTitle, loadNotes 
             <MenuIcon />
           </IconButton>
           <Typography variant="h6" noWrap>
-            {title}
+            <Link to='/' className='text-white' >{title}</Link>
           </Typography>
         </Toolbar>
       </AppBar>

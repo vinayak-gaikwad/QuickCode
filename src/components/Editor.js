@@ -30,7 +30,6 @@ export default function Editor({ language,
     width,
     fontSize }) {
     return (
-        <div>
             <AceEditor
                 mode={language}
                 theme={theme}
@@ -49,6 +48,6 @@ export default function Editor({ language,
                     enableSnippets: true
                 }}
             />
-        </div>
+        
     )
 }
