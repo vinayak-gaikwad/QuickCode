@@ -48,6 +48,9 @@ class Register extends React.Component {
                         alert("Registration Successfull")
                         this.props.history.push('/login')
                     }
+                    else{
+                        alert(res.data)
+                    }
                 })
                 .catch(err => {
                     console.log(err)
